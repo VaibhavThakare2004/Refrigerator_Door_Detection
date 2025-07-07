@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Door Detection</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Door Detection</h1>
+            <a href="/" class="back-btn">← Back to Home</a>
+        </header>
+        
+        <main>
+            <form action="/detect" method="post" enctype="multipart/form-data" class="upload-form">
+                <div class="form-group">
+                    <label for="file">Upload Refrigerator Image:</label>
+                    <input type="file" id="file" name="file" accept="image/*" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="threshold">Confidence Threshold (0.5-0.95):</label>
+                    <input type="number" id="threshold" name="threshold" 
+                           step="0.01" min="0.5" max="0.95" value="0.7" required>
+                </div>
+                
+                <button type="submit" class="btn">Detect Doors</button>
+            </form>
+        </main>
+    </div>
+</body>
+</html>

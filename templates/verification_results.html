@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verification Results</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Verification Results</h1>
+            <a href="/verification" class="back-btn">← Verify Another Pair</a>
+        </header>
+        
+        <main>
+            <div class="image-comparison">
+                <div class="image-container">
+                    <p>Reference Image:</p>
+                    <img src="/static/uploads/{{ image1 }}" alt="Reference image" class="result-image">
+                </div>
+                
+                <div class="image-container">
+                    <p>Test Image:</p>
+                    <img src="/static/uploads/{{ image2 }}" alt="Test image" class="result-image">
+                </div>
+            </div>
+            
+            <div class="verification-result {% if is_same_door %}same{% else %}different{% endif %}">
+                <h2>Result:</h2>
+                <p>Distance: {{ "%.4f"|format(distance) }} (Threshold: {{ threshold }})</p>
+                <p class="result-text">{% if is_same_door %}SAME DOOR{% else %}DIFFERENT DOORS{% endif %}</p>
+            </div>
+        </main>
+    </div>
+</body>
+</html>
