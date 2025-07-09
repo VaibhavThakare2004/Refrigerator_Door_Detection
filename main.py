@@ -19,6 +19,8 @@ from werkzeug.utils import secure_filename
 from pathlib import Path
 import zipfile
 import io
+from utils import ensure_models_downloaded
+
 
 app = FastAPI()
 
@@ -34,13 +36,15 @@ templates = Jinja2Templates(directory="templates")
 # Load models at startup
 @app.on_event("startup")
 async def load_models():
+    from utils import ensure_models_downloaded
+    ensure_models_downloaded()
     global detection_predictor, verification_model, device
     
     # Load Detectron2 model
     cfg = get_cfg()
     cfg.merge_from_file(model_zoo.get_config_file("COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml"))
     cfg.MODEL.ROI_HEADS.NUM_CLASSES = 1
-    cfg.MODEL.WEIGHTS = "model_final.pth"
+    cfg.MODEL.WEIGHTS = "door_detection_model.pth"
     cfg.MODEL.DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
     detection_predictor = DefaultPredictor(cfg)
     
@@ -93,24 +97,6 @@ async def detection_page(request: Request):
 async def verification_page(request: Request):
     return templates.TemplateResponse("verification.html", {"request": request})
 
-@app.get("/download-crops")
-async def download_crops():
-    # Create a zip file in memory
-    zip_filename = "detected_doors.zip"
-    memory_file = io.BytesIO()
-    
-    with zipfile.ZipFile(memory_file, 'w') as zf:
-        for file in os.listdir(CROP_FOLDER):
-            file_path = os.path.join(CROP_FOLDER, file)
-            if os.path.isfile(file_path):
-                zf.write(file_path, file)
-    
-    memory_file.seek(0)
-    return FileResponse(
-        memory_file,
-        media_type="application/zip",
-        filename=zip_filename
-    )
 
 @app.post("/detect", response_class=HTMLResponse)
 async def detect_doors(
@@ -228,6 +214,25 @@ async def verify_doors(
         "is_same_door": is_same,
         "threshold": threshold
     })
+
+@app.get("/download-crops", response_class=HTMLResponse)
+async def list_crops_for_download(request: Request):
+    try:
+        files = [
+            f for f in os.listdir(CROP_FOLDER)
+            if os.path.isfile(os.path.join(CROP_FOLDER, f))
+        ]
+        return templates.TemplateResponse("download_crops.html", {
+            "request": request,
+            "files": files
+        })
+    except Exception as e:
+        return templates.TemplateResponse("error.html", {
+            "request": request,
+            "error": f"Error listing crops: {str(e)}"
+        })
+
+
 
 if __name__ == "__main__":
     import uvicorn

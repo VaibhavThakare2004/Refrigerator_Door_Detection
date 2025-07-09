@@ -21,10 +21,12 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="threshold">Confidence Threshold (0.5-0.95):</label>
-                    <input type="number" id="threshold" name="threshold" 
-                           step="0.01" min="0.5" max="0.95" value="0.7" required>
-                </div>
+    <label for="threshold">Confidence Threshold (0.5–0.95):</label>
+    <input type="number" id="threshold" name="threshold" 
+           step="0.01" min="0.5" max="0.95" value="0.7" required>
+    <small style="color: #555;">Put <strong>0.95</strong> if your image is clean and clear. If not, you may put <strong>0.75</strong>.</small>
+</div>
+
                 
                 <button type="submit" class="btn">Detect Doors</button>
             </form>

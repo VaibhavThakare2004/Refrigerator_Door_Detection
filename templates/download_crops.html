@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Download Cropped Images</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Download Cropped Doors</h1>
+        <a href="/detection" class="back-btn">← Back to Detection</a>
+        {% if files %}
+            <ul class="crop-download-list">
+                {% for file in files %}
+                    <li>
+                        <a href="/static/crops/{{ file }}" class="btn" download>{{ file }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No cropped images found.</p>
+        {% endif %}
+    </div>
+</body>
+</html>
