@@ -19,7 +19,7 @@ from werkzeug.utils import secure_filename
 from pathlib import Path
 import zipfile
 import io
-from utils import ensure_models_downloaded
+
 
 
 app = FastAPI()
@@ -36,8 +36,6 @@ templates = Jinja2Templates(directory="templates")
 # Load models at startup
 @app.on_event("startup")
 async def load_models():
-    from utils import ensure_models_downloaded
-    ensure_models_downloaded()
     global detection_predictor, verification_model, device
     
     # Load Detectron2 model
