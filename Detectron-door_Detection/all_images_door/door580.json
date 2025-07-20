@@ -1,0 +1,58 @@
+{
+    "version": "5.0.1",
+    "flags": {},
+    "shapes": [
+        {
+            "label": "door",
+            "points": [
+                [
+                    8,
+                    124
+                ],
+                [
+                    115,
+                    124
+                ],
+                [
+                    115,
+                    180
+                ],
+                [
+                    8,
+                    180
+                ]
+            ],
+            "group_id": null,
+            "shape_type": "polygon",
+            "flags": {}
+        },
+        {
+            "label": "door",
+            "points": [
+                [
+                    8,
+                    0
+                ],
+                [
+                    115,
+                    0
+                ],
+                [
+                    115,
+                    124
+                ],
+                [
+                    8,
+                    124
+                ]
+            ],
+            "group_id": null,
+            "shape_type": "polygon",
+            "flags": {}
+        }
+    ],
+    "imagePath": "door580.jpg",
+    "imageHeight": 180,
+    "imageWidth": 115,
+    "imageData": null
+}

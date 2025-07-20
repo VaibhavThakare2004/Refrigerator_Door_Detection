@@ -1,0 +1,34 @@
+{
+    "version": "5.0.1",
+    "flags": {},
+    "shapes": [
+        {
+            "label": "door",
+            "points": [
+                [
+                    33,
+                    1
+                ],
+                [
+                    155,
+                    1
+                ],
+                [
+                    155,
+                    180
+                ],
+                [
+                    33,
+                    180
+                ]
+            ],
+            "group_id": null,
+            "shape_type": "polygon",
+            "flags": {}
+        }
+    ],
+    "imagePath": "door375.jpg",
+    "imageHeight": 183,
+    "imageWidth": 182,
+    "imageData": null
+}

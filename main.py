@@ -1,5 +1,5 @@
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Request
-from fastapi.responses import JSONResponse, HTMLResponse, FileResponse
+from fastapi import FastAPI, UploadFile, File, Form, Request
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import cv2
@@ -16,11 +16,6 @@ import torchvision.models as models
 import torch.nn as nn
 import shutil
 from werkzeug.utils import secure_filename
-from pathlib import Path
-import zipfile
-import io
-
-
 
 app = FastAPI()
 
@@ -32,25 +27,6 @@ os.makedirs(CROP_FOLDER, exist_ok=True)
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
-
-# Load models at startup
-@app.on_event("startup")
-async def load_models():
-    global detection_predictor, verification_model, device
-    
-    # Load Detectron2 model
-    cfg = get_cfg()
-    cfg.merge_from_file(model_zoo.get_config_file("COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml"))
-    cfg.MODEL.ROI_HEADS.NUM_CLASSES = 1
-    cfg.MODEL.WEIGHTS = "door_detection_model.pth"
-    cfg.MODEL.DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-    detection_predictor = DefaultPredictor(cfg)
-    
-    # Load Siamese model
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    verification_model = SiameseNetwork().to(device)
-    verification_model.load_state_dict(torch.load("siamese_door_model.pth", map_location=device))
-    verification_model.eval()
 
 # Siamese Network definition
 class SiameseNetwork(nn.Module):
@@ -75,13 +51,29 @@ class SiameseNetwork(nn.Module):
         output2 = self.forward_once(input2)
         return output1, output2
 
-# Image transformation for verification
+# Image transform
 transform = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.485, 0.456, 0.406],
                          std=[0.229, 0.224, 0.225])
 ])
+
+@app.on_event("startup")
+async def load_models():
+    global detection_predictor, verification_model, device
+    
+    cfg = get_cfg()
+    cfg.merge_from_file(model_zoo.get_config_file("COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml"))
+    cfg.MODEL.ROI_HEADS.NUM_CLASSES = 1
+    cfg.MODEL.WEIGHTS = "door_detection_model.pth"
+    cfg.MODEL.DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+    detection_predictor = DefaultPredictor(cfg)
+    
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    verification_model = SiameseNetwork().to(device)
+    verification_model.load_state_dict(torch.load("siamese_door_model.pth", map_location=device))
+    verification_model.eval()
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
@@ -95,53 +87,44 @@ async def detection_page(request: Request):
 async def verification_page(request: Request):
     return templates.TemplateResponse("verification.html", {"request": request})
 
-
 @app.post("/detect", response_class=HTMLResponse)
 async def detect_doors(
     request: Request,
     file: UploadFile = File(...),
     threshold: float = Form(0.7)
 ):
-    # Validate threshold
     if not 0.5 <= threshold <= 0.95:
         return templates.TemplateResponse("error.html", {
             "request": request,
             "error": "Threshold must be between 0.5 and 0.95"
         })
     
-    # Save uploaded file
-    file_path = os.path.join(UPLOAD_FOLDER, secure_filename(file.filename))
+    filename = secure_filename(file.filename)
+    file_path = os.path.join(UPLOAD_FOLDER, filename)
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
-    
-    # Read image
+
     image = cv2.imread(file_path)
     if image is None:
         return templates.TemplateResponse("error.html", {
             "request": request,
             "error": "Invalid image file"
         })
-    
-    # Clear previous crops
+
     for f in os.listdir(CROP_FOLDER):
         os.remove(os.path.join(CROP_FOLDER, f))
-    
-    # Detect doors
+
     outputs = detection_predictor(image)
     instances = outputs["instances"]
     boxes = instances.pred_boxes.tensor.cpu().numpy()
     scores = instances.scores.cpu().numpy()
-    
-    # Crop and save detected doors (resized to 300x300)
+
     detected_doors = []
     for i, box in enumerate(boxes):
         if scores[i] >= threshold:
             x1, y1, x2, y2 = box.astype(int)
             crop = image[y1:y2, x1:x2]
-            
-            # Resize the crop to make it smaller and consistent
             crop = cv2.resize(crop, (300, 300))
-            
             crop_filename = f"door_crop_{i+1}.jpg"
             crop_path = os.path.join(CROP_FOLDER, crop_filename)
             cv2.imwrite(crop_path, crop)
@@ -150,10 +133,10 @@ async def detect_doors(
                 "confidence": float(scores[i]),
                 "box": [int(x1), int(y1), int(x2), int(y2)]
             })
-    
+
     return templates.TemplateResponse("detection_results.html", {
         "request": request,
-        "original_image": file.filename,
+        "original_image": filename,
         "detected_doors": detected_doors,
         "count": len(detected_doors),
         "threshold": threshold
@@ -165,27 +148,28 @@ async def verify_doors(
     file1: UploadFile = File(...),
     file2: UploadFile = File(...)
 ):
-    # Save uploaded files
-    file1_path = os.path.join(UPLOAD_FOLDER, secure_filename(file1.filename))
-    file2_path = os.path.join(UPLOAD_FOLDER, secure_filename(file2.filename))
-    
+    filename1 = secure_filename(file1.filename)
+    filename2 = secure_filename(file2.filename)
+
+    file1_path = os.path.join(UPLOAD_FOLDER, filename1)
+    file2_path = os.path.join(CROP_FOLDER, filename2)
+
     with open(file1_path, "wb") as buffer:
         shutil.copyfileobj(file1.file, buffer)
+
     with open(file2_path, "wb") as buffer:
         shutil.copyfileobj(file2.file, buffer)
-    
-    # Verify that the second image is from the crops folder
-    if not file2.filename.startswith("door_crop_"):
+
+    if not filename2.startswith("door_crop_"):
         return templates.TemplateResponse("error.html", {
             "request": request,
             "error": "Second image must be one of the detected door crops"
         })
-    
-    # Load and transform images
+
     def load_image(image_path):
         img = Image.open(image_path).convert("RGB")
         return transform(img).unsqueeze(0).to(device)
-    
+
     try:
         img1 = load_image(file1_path)
         img2 = load_image(file2_path)
@@ -194,20 +178,18 @@ async def verify_doors(
             "request": request,
             "error": f"Error loading images: {str(e)}"
         })
-    
-    # Get embeddings
+
     with torch.no_grad():
         out1, out2 = verification_model(img1, img2)
         dist = F.pairwise_distance(out1, out2)
-    
-    # Fixed threshold of 0.85
+
     threshold = 0.85
     is_same = dist.item() < threshold
-    
+
     return templates.TemplateResponse("verification_results.html", {
         "request": request,
-        "image1": file1.filename,
-        "image2": file2.filename,
+        "image1": filename1,
+        "image2": filename2,
         "distance": float(dist.item()),
         "is_same_door": is_same,
         "threshold": threshold
@@ -230,10 +212,6 @@ async def list_crops_for_download(request: Request):
             "error": f"Error listing crops: {str(e)}"
         })
 
-
-
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
-
-

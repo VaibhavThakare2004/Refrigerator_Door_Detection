@@ -14,17 +14,18 @@
         </header>
         
         <main>
-            <div class="image-comparison">
-                <div class="image-container">
-                    <p>Reference Image:</p>
-                    <img src="/static/uploads/{{ image1 }}" alt="Reference image" class="result-image">
-                </div>
-                
-                <div class="image-container">
-                    <p>Test Image:</p>
-                    <img src="/static/uploads/{{ image2 }}" alt="Test image" class="result-image">
-                </div>
-            </div>
+           <div class="image-comparison">
+    <div class="image-container">
+        <p>Reference Image:</p>
+        <img src="/static/uploads/{{ image1 }}" alt="Reference image" class="result-image">
+    </div>
+    
+    <div class="image-container">
+        <p>Test Image:</p>
+        <img src="/static/crops/{{ image2 }}" alt="Test image" class="result-image">
+    </div>
+</div>
+
             
             <div class="verification-result {% if is_same_door %}same{% else %}different{% endif %}">
                 <h2>Result:</h2>

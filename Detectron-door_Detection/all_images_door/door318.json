@@ -1,0 +1,106 @@
+{
+    "version": "5.0.1",
+    "flags": {},
+    "shapes": [
+        {
+            "label": "door",
+            "points": [
+                [
+                    238,
+                    278
+                ],
+                [
+                    333,
+                    278
+                ],
+                [
+                    333,
+                    512
+                ],
+                [
+                    238,
+                    512
+                ]
+            ],
+            "group_id": null,
+            "shape_type": "polygon",
+            "flags": {}
+        },
+        {
+            "label": "door",
+            "points": [
+                [
+                    128,
+                    274
+                ],
+                [
+                    235,
+                    274
+                ],
+                [
+                    235,
+                    512
+                ],
+                [
+                    128,
+                    512
+                ]
+            ],
+            "group_id": null,
+            "shape_type": "polygon",
+            "flags": {}
+        },
+        {
+            "label": "door",
+            "points": [
+                [
+                    131,
+                    152
+                ],
+                [
+                    217,
+                    152
+                ],
+                [
+                    217,
+                    246
+                ],
+                [
+                    131,
+                    246
+                ]
+            ],
+            "group_id": null,
+            "shape_type": "polygon",
+            "flags": {}
+        },
+        {
+            "label": "door",
+            "points": [
+                [
+                    103,
+                    4
+                ],
+                [
+                    371,
+                    4
+                ],
+                [
+                    371,
+                    522
+                ],
+                [
+                    103,
+                    522
+                ]
+            ],
+            "group_id": null,
+            "shape_type": "polygon",
+            "flags": {}
+        }
+    ],
+    "imagePath": "door318.jpg",
+    "imageHeight": 525,
+    "imageWidth": 474,
+    "imageData": null
+}
