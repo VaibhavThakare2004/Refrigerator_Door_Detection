@@ -1,23 +1,19 @@
-# Core FastAPI
 fastapi==0.95.2
 uvicorn==0.22.0
 python-multipart==0.0.6
-
-# Computer Vision
-opencv-python-headless==4.7.0.72  # Headless version (lighter)
+jinja2
+werkzeug
+opencv-python-headless==4.7.0.72
 pillow==9.5.0
 numpy==1.24.3
-
-# PyTorch (official builds with CUDA 11.7)
-torch==2.0.1+cu117 --extra-index-url https://download.pytorch.org/whl/cu117
-torchvision==0.15.2+cu117 --extra-index-url https://download.pytorch.org/whl/cu117
-
-# Detectron2 and dependencies
-detectron2@git+https://github.com/facebookresearch/detectron2.git@v0.6
 pyyaml==6.0
 fvcore==0.1.5.post20221221
-iopath==0.1.10  # Required for detectron2
-
-# Additional utilities
+iopath==0.1.10
 requests==2.31.0
-git-lfs==3.3.0  # For model tracking      
+# CPU version (uncomment and comment GPU version for CPU-only deployment)
+# torch==2.0.1
+# torchvision==0.15.2
+# GPU/CUDA version
+torch==2.0.1+cu117
+torchvision==0.15.2+cu117
+detectron2 @ git+https://github.com/facebookresearch/detectron2.git@v0.6
